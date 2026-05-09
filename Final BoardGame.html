@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>课堂桌游系统</title>
+
+<style>
+body{
+    font-family:"Microsoft YaHei", sans-serif;
+    text-align:center;
+    background:#f2f2f2;
+    margin:0;
+    padding:0;
+}
+
+h1{
+    font-size:42px;
+    margin-top:20px;
+    margin-bottom:10px;
+}
+
+/* ===== 开始画面 ===== */
+#setup{
+    margin-top:100px;
+}
+
+#setup label{
+    font-size:30px;
+    font-weight:bold;
+    margin-right:12px;
+}
+
+#groups{
+    font-size:24px;
+    width:120px;
+    height:50px;
+    text-align:center;
+    border:2px solid #999;
+    border-radius:10px;
+    outline:none;
+    background:white;
+}
+
+#groups:focus{
+    border-color:#4a90e2;
+    box-shadow:0 0 8px rgba(74,144,226,0.35);
+}
+
+#startBtn{
+    font-size:28px;
+    font-weight:bold;
+    padding:14px 34px;
+    margin-left:20px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(135deg,#ffb347,#ff7b54);
+    color:white;
+    cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,0.18);
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#startBtn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 18px rgba(0,0,0,0.22);
+}
+
+#startBtn:active{
+    transform:translateY(0);
+    box-shadow:0 4px 10px rgba(0,0,0,0.16);
+}
+
+/* ===== 游戏区 ===== */
+#gameArea{
+    display:none;
+    margin-top:20px;
+    width:100%;
+}
+
+#mainLayout{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    gap:30px;
+    margin-top:20px;
+    flex-wrap:wrap;
+}
+
+/* ===== 左边排行榜 ===== */
+#scoreBoard{
+    width:290px;
+    min-height:300px;
+    background:white;
+    border:2px solid #333;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.12);
+    text-align:left;
+    box-sizing:border-box;
+}
+
+#scoreBoard h2{
+    font-size:28px;
+    margin-top:0;
+    margin-bottom:16px;
+    text-align:center;
+}
+
+.scoreItem{
+    font-size:22px;
+    margin:12px 0;
+    padding:12px 14px;
+    border-radius:10px;
+    background:#f7f7f7;
+    font-weight:bold;
+    line-height:1.3;
+    white-space:nowrap;
+    overflow:visible;
+    text-overflow:clip;
+    box-sizing:border-box;
+}
+
+/* ===== 棋盘 ===== */
+#boardWrap{
+    position:relative;
+    display:inline-block;
+}
+
+#board{
+    display:grid;
+    grid-template-columns:repeat(11,80px);
+    grid-template-rows:repeat(7,70px);
+    gap:4px;
+    position:relative;
+    z-index:1;
+}
+
+.cell{
+    border:2px solid black;
+    background:white;
+    font-size:24px;
+    font-weight:bold;
+    position:relative;
+    padding:3px;
+    box-sizing:border-box;
+    overflow:hidden;
+}
+
+/* +50 格 */
+.score50Cell{
+    border:3px solid #d8bf4a;
+    background:#fff8cc;
+}
+
+/* +100 格 */
+.score100Cell{
+    border:3px solid #59bfc7;
+    background:#dffbff;
+}
+
+/* +10 格 */
+.score10Cell{
+    border:3px solid #e29090;
+    background:#ffe3e3;
+}
+
+.empty{
+    border:none;
+    background:transparent;
+}
+
+.chance{
+    background:#bfe6bf;
+    border:3px solid #5fa85f;
+}
+
+.fate{
+    background:#f0bcbc;
+    border:3px solid #d47a7a;
+}
+
+/* 小标签 */
+.cellLabel{
+    position:absolute;
+    left:4px;
+    bottom:2px;
+    font-size:13px;
+    font-weight:bold;
+    line-height:1;
+    padding:2px 5px;
+    border-radius:8px;
+}
+
+.score50Label{
+    background:#fff0a6;
+    color:#8a6a00;
+}
+
+.score100Label{
+    background:#c9f4fb;
+    color:#0d6f78;
+}
+
+.score10Label{
+    background:#ffd0d0;
+    color:#a33a3a;
+}
+
+/* ===== 棋子 ===== */
+.token{
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    position:absolute;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:14px;
+    font-weight:bold;
+    z-index:3;
+}
+
+/* ===== 中间控制面板 ===== */
+#centerPanel{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:430px;
+    min-height:280px;
+    background:rgba(255,255,255,0.96);
+    border:3px solid #333;
+    border-radius:22px;
+    box-shadow:0 8px 22px rgba(0,0,0,0.16);
+    z-index:5;
+    padding:22px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    box-sizing:border-box;
+}
+
+#dice{
+    font-size:64px;
+    margin-bottom:10px;
+}
+
+#turn{
+    font-size:24px;
+    margin-bottom:14px;
+    font-weight:bold;
+}
+
+#question{
+    font-size:26px;
+    color:blue;
+    min-height:95px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    margin-bottom:14px;
+    line-height:1.45;
+    padding:0 8px;
+    box-sizing:border-box;
+}
+
+#controls{
+    margin-top:8px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+}
+
+button{
+    font-size:20px;
+    padding:12px 24px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+#diceBtn{
+    background:#f4c64e;
+    color:black;
+    font-weight:bold;
+}
+
+#correctBtn{
+    background:#34a853;
+    color:white;
+    font-weight:bold;
+}
+
+#wrongBtn{
+    background:#ea4335;
+    color:white;
+    font-weight:bold;
+}
+
+#nextBtn{
+    background:#4a90e2;
+    color:white;
+    font-weight:bold;
+}
+
+button:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<h1>课堂桌游系统</h1>
+
+<div id="setup">
+    <label>小组数量 (2-8)</label>
+    <input id="groups" type="number" min="2" max="8">
+    <button id="startBtn" onclick="startGame()">开始游戏</button>
+</div>
+
+<div id="gameArea">
+    <div id="mainLayout">
+
+        <div id="scoreBoard">
+            <h2>排行榜</h2>
+            <div id="scoreList"></div>
+        </div>
+
+        <div id="boardWrap">
+            <div id="board"></div>
+
+            <div id="centerPanel">
+                <div id="dice">🎲</div>
+                <div id="turn">现在轮到：第1组</div>
+                <div id="question"></div>
+
+                <div id="controls">
+                    <button id="diceBtn" onclick="rollDice()">🎲 掷骰子</button>
+                    <button id="correctBtn" onclick="correct()" style="display:none">✔ 答对</button>
+                    <button id="wrongBtn" onclick="wrong()" style="display:none">✘ 答错</button>
+                    <button id="nextBtn" onclick="nextTurn()" style="display:none">➡ 下一组</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const TOTAL = 31
+const CHANCE_CELL = 11
+const FATE_CELL = 12
+const FINAL_CELL = 31
+const diceSymbols = ["⚀","⚁","⚂","⚃","⚄","⚅"]
+
+const score50Cells = [1,4,5,7,9,10,13,14,15,16,17,18,19,21,22,23,25,26,27,28,29,30]
+const score100Cells = [2,3,8,20,24]
+const score10Cells = [6,31]
+
+const questions = [
+"说出一项中学和小学的不同。",
+"说出一项在校园聆听讲座时，能表达尊重他人的规则或礼仪。",
+"说出一个让自己尽快适应中学生活的小贴士。",
+"说出自己上中学的目标、心愿或期待。",
+"小组一起大声说出：恭喜自己升上中学了。",
+"恭喜来到独中就读，同组同学给自己一个爱的鼓励。",
+"说出社会科学其中一个科目的名称。",
+"我的班导师的名字是......",
+"说出一件目前你感觉最开心的事情。",
+"小组成员用一个动作表现“认真上课”。",
+"机会：好的开始是成功的一半。再掷骰子一次。",
+"命运：轻松一下，深呼吸。暂停一次。",
+"我在学校需要卫生棉。",
+"同学因生病而昏睡。",
+"在学校捡到运动器材。",
+"同学不做公共场地打扫。",
+"心理困扰，除了同学、网友之外，还可以找谁。",
+"申请助学金。",
+"课室风扇坏了。",
+"有人欺负我。",
+"【留白】请老师自行填写。",
+"教室打扫用具损坏。",
+"身体不舒服想要请假回家。",
+"上课迟进教室，发现同学都不在教室。",
+"打球受伤。",
+"上课超过5分钟了，老师一直没出现。",
+"被分发到不喜欢的社团，想要转团。",
+"想要列印或复印一些文件。",
+"要阅读报纸或借阅课外书。",
+"在学校有压力。",
+"请小组成员用一个词形容你们的中学生活。"
+]
+
+let groups = 0
+let scores = {}
+let position = {}
+let skipTurn = {}
+let current = 1
+let isMoving = false
+let gameOver = false
+let currentAward = 0
+
+const colors = ["red","blue","green","orange","purple","cyan","pink","gold"]
+
+const boardLayout = [
+[1,2,3,4,5,6,7,8,9,10,11],
+[31,0,0,0,0,0,0,0,0,0,12],
+[30,0,0,0,0,0,0,0,0,0,13],
+[29,0,0,0,0,0,0,0,0,0,14],
+[28,0,0,0,0,0,0,0,0,0,15],
+[27,0,0,0,0,0,0,0,0,0,16],
+[26,25,24,23,22,21,20,19,18,17,0]
+]
+
+function createBoard(){
+    const board = document.getElementById("board")
+    board.innerHTML = ""
+
+    boardLayout.forEach(row => {
+        row.forEach(num => {
+            const cell = document.createElement("div")
+
+            if(num === 0){
+                cell.className = "empty"
+            }else{
+                cell.className = "cell"
+                cell.id = "cell" + num
+
+                if(num === CHANCE_CELL){
+                    cell.classList.add("chance")
+                    cell.innerHTML = "11<br>机会"
+                }else if(num === FATE_CELL){
+                    cell.classList.add("fate")
+                    cell.innerHTML = "12<br>命运"
+                }else if(score50Cells.includes(num)){
+                    cell.classList.add("score50Cell")
+                    cell.innerHTML = num + '<div class="cellLabel score50Label">+50</div>'
+                }else if(score100Cells.includes(num)){
+                    cell.classList.add("score100Cell")
+                    cell.innerHTML = num + '<div class="cellLabel score100Label">+100</div>'
+                }else if(score10Cells.includes(num)){
+                    cell.classList.add("score10Cell")
+                    cell.innerHTML = num + '<div class="cellLabel score10Label">+10</div>'
+                }else{
+                    cell.innerHTML = num
+                }
+            }
+
+            board.appendChild(cell)
+        })
+    })
+}
+
+function placeTokens(){
+    for(let g = 1; g <= groups; g++){
+        const token = document.createElement("div")
+        token.className = "token"
+        token.id = "token" + g
+        token.style.background = colors[g - 1]
+        token.innerText = g
+
+        const startCell = document.getElementById("cell1")
+        if(startCell){
+            startCell.appendChild(token)
+        }
+    }
+    arrangeTokens()
+}
+
+function arrangeTokens(){
+    for(let pos = 1; pos <= TOTAL; pos++){
+        const cell = document.getElementById("cell" + pos)
+        if(!cell) continue
+
+        const tokens = [...cell.querySelectorAll(".token")]
+        tokens.forEach((t, i) => {
+            t.style.left = (i % 2) * 28 + 4 + "px"
+            t.style.top = Math.floor(i / 2) * 28 + 30 + "px"
+        })
+    }
+}
+
+function moveToken(group){
+    const token = document.getElementById("token" + group)
+    const pos = position[group]
+    const targetCell = document.getElementById("cell" + pos)
+
+    if(!token || !targetCell){
+        console.error("找不到棋子或格子：", group, pos)
+        isMoving = false
+        return
+    }
+
+    targetCell.appendChild(token)
+    arrangeTokens()
+}
+
+function getScoreForCell(pos){
+    if(pos === CHANCE_CELL || pos === FATE_CELL){
+        return 0
+    }
+    if(score50Cells.includes(pos)) return 50
+    if(score100Cells.includes(pos)) return 100
+    if(score10Cells.includes(pos)) return 10
+    return 0
+}
+
+function updateCorrectButtonText(){
+    const btn = document.getElementById("correctBtn")
+    if(currentAward > 0){
+        btn.textContent = "✔ 答对 +" + currentAward
+    }else{
+        btn.textContent = "✔ 答对"
+    }
+}
+
+function startGame(){
+    groups = parseInt(document.getElementById("groups").value)
+
+    if(groups < 2 || groups > 8 || isNaN(groups)){
+        alert("请输入2到8组")
+        return
+    }
+
+    document.getElementById("setup").style.display = "none"
+    document.getElementById("gameArea").style.display = "block"
+
+    createBoard()
+
+    scores = {}
+    position = {}
+    skipTurn = {}
+    current = 1
+    isMoving = false
+    gameOver = false
+    currentAward = 0
+
+    for(let i = 1; i <= groups; i++){
+        scores[i] = 0
+        position[i] = 1
+        skipTurn[i] = false
+    }
+
+    placeTokens()
+    updateScore()
+    updateCorrectButtonText()
+
+    document.getElementById("turn").innerHTML = "现在轮到：第1组"
+    document.getElementById("question").innerHTML = ""
+    document.getElementById("dice").innerHTML = "🎲"
+
+    showDiceOnly()
+}
+
+function hideAllActionButtons(){
+    document.getElementById("diceBtn").style.display = "none"
+    document.getElementById("correctBtn").style.display = "none"
+    document.getElementById("wrongBtn").style.display = "none"
+    document.getElementById("nextBtn").style.display = "none"
+}
+
+function showDiceOnly(){
+    hideAllActionButtons()
+    if(!gameOver){
+        document.getElementById("diceBtn").style.display = "inline-block"
+        document.getElementById("diceBtn").disabled = false
+    }
+}
+
+function showAnswerButtonsOnly(){
+    hideAllActionButtons()
+    updateCorrectButtonText()
+    document.getElementById("correctBtn").style.display = "inline-block"
+    document.getElementById("wrongBtn").style.display = "inline-block"
+}
+
+function showNextOnly(){
+    hideAllActionButtons()
+    document.getElementById("nextBtn").style.display = "inline-block"
+}
+
+function rollDice(){
+    if(isMoving || gameOver) return
+
+    isMoving = true
+    currentAward = 0
+    hideAllActionButtons()
+
+    const final = Math.floor(Math.random() * 6)
+    let count = 0
+
+    const anim = setInterval(() => {
+        const r = Math.floor(Math.random() * 6)
+        document.getElementById("dice").innerHTML = diceSymbols[r]
+        count++
+
+        if(count > 10){
+            clearInterval(anim)
+            document.getElementById("dice").innerHTML = diceSymbols[final]
+            moveSteps(final + 1)
+        }
+    }, 80)
+}
+
+function moveOneStepForward(group){
+    position[group]++
+    if(position[group] > TOTAL){
+        position[group] = 1
+    }
+    moveToken(group)
+}
+
+function moveSteps(step){
+    if(step === 0){
+        isMoving = false
+
+        const pos = position[current]
+        currentAward = getScoreForCell(pos)
+
+        if(pos === CHANCE_CELL){
+            document.getElementById("question").innerHTML = "机会：再掷骰子一次！第11格不加分。"
+            showDiceOnly()
+            return
+        }
+
+        if(pos === FATE_CELL){
+            document.getElementById("question").innerHTML = "命运：下一轮暂停一次！第12格不加分。"
+            skipTurn[current] = true
+            showNextOnly()
+            return
+        }
+
+        if(pos === FINAL_CELL){
+            document.getElementById("question").innerHTML = "第31格与第1格相连，本格可得 +10 分。"
+            showAnswerButtonsOnly()
+            return
+        }
+
+        document.getElementById("question").innerHTML = questions[(pos - 1) % questions.length]
+        showAnswerButtonsOnly()
+        return
+    }
+
+    moveOneStepForward(current)
+    setTimeout(() => moveSteps(step - 1), 300)
+}
+
+function correct(){
+    if(gameOver) return
+    scores[current] += currentAward
+    currentAward = 0
+    updateScore()
+    nextTurn()
+}
+
+function wrong(){
+    if(gameOver) return
+    currentAward = 0
+    nextTurn()
+}
+
+function getNextAvailableGroup(fromGroup){
+    for(let offset = 1; offset <= groups; offset++){
+        let g = fromGroup + offset
+        if(g > groups) g -= groups
+
+        if(!skipTurn[g]){
+            return g
+        }
+    }
+    return null
+}
+
+function clearSkippedGroupsOnce(startFrom){
+    for(let offset = 1; offset <= groups; offset++){
+        let g = startFrom + offset
+        if(g > groups) g -= groups
+
+        if(skipTurn[g]){
+            alert("第" + g + "组暂停一轮")
+            skipTurn[g] = false
+        }
+    }
+}
+
+function nextTurn(){
+    document.getElementById("question").innerHTML = ""
+    document.getElementById("dice").innerHTML = "🎲"
+    currentAward = 0
+    hideAllActionButtons()
+
+    clearSkippedGroupsOnce(current)
+
+    const nextGroup = getNextAvailableGroup(current)
+
+    if(nextGroup === null){
+        document.getElementById("turn").innerHTML = "暂时没有可进行的小组"
+        return
+    }
+
+    current = nextGroup
+    document.getElementById("turn").innerHTML = "现在轮到：第" + current + "组"
+    showDiceOnly()
+}
+
+function updateScore(){
+    const scoreList = document.getElementById("scoreList")
+    scoreList.innerHTML = ""
+
+    const arr = []
+    for(let g = 1; g <= groups; g++){
+        arr.push({
+            group:g,
+            score:scores[g]
+        })
+    }
+
+    arr.sort((a, b) => {
+        if(b.score !== a.score) return b.score - a.score
+        return a.group - b.group
+    })
+
+    arr.forEach((item, index) => {
+        const div = document.createElement("div")
+        div.className = "scoreItem"
+        div.textContent = (index + 1) + ". 第" + item.group + "组： " + item.score + "分"
+        scoreList.appendChild(div)
+    })
+}
+</script>
+
+</body>
+</html>
